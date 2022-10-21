@@ -1,18 +1,37 @@
 const router = require('express').Router();
+const { restart } = require('nodemon');
 const { Product, Category, Tag, ProductTag } = require('../../models');
 
 // The `/api/products` endpoint
 
 // get all products
-router.get('/', (req, res) => {
-  // find all products
-  // be sure to include its associated Category and Tag data
+router.get('/', async (req, res) => {
+  const products = await Product.findAll({
+    include: [Category, { model: Tag, through: ProductTag,},],
+  })
+  try {
+    res.status(200).json(products)
+  } catch (err) {
+    res.status(400).json(err)
+  }
 });
 
 // get one product
-router.get('/:id', (req, res) => {
-  // find a single product by its `id`
-  // be sure to include its associated Category and Tag data
+router.get('/:id', async (req, res) => {
+  const product =  await Product.findOne({
+    where: {
+      id: req.params.id,
+    },
+    include: [{
+      model: Tag,
+      through: ProductTag,
+    }]
+  })
+  try {
+    res.status(200).json(product)
+  } catch (err) {
+    res.status(400).json(err)
+  }
 });
 
 // create new product
@@ -89,8 +108,17 @@ router.put('/:id', (req, res) => {
     });
 });
 
-router.delete('/:id', (req, res) => {
-  // delete one product by its `id` value
+router.delete('/:id', async (req, res) => {
+  const products = await Product.destroy({
+    where: {
+      id: req.params.id
+    }
+  })
+  try {
+    res.status(200).json(products)
+  } catch (err) {
+    res.status(400).json(err)
+  }
 });
 
 module.exports = router;
